@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ToDoListDTO;
 
 namespace ToDoList.Models
 {
-    public interface ITaskRepository
+    public interface IUserRepository
     {
-        IQueryable<ToDoTask> Tasks();
+        IQueryable<User> Users();
     }
 }

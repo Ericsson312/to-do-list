@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ToDoListDTO;
 
 namespace ToDoList.Models
 {
@@ -9,12 +10,38 @@ namespace ToDoList.Models
     {
         public IQueryable<ToDoTask> Tasks()
         {
-            List<ToDoTask> myTasks = new List<ToDoTask>()
+            List<ToDoTask> tasks = new List<ToDoTask>()
             {
-                new ToDoTask { UserId = 1, Name = "Wash Car" , Description = "Wash car with clinning agent" , TimePublished = new DateTime(), IsComplite = false}
+                new ToDoTask 
+                { 
+                    Id = 1,
+                    UserId = 1, 
+                    Name = "Wash car" , 
+                    Description = "Wash car with clinning agent", 
+                    TimePublished = new DateTime(), 
+                    IsComplite = false
+                },
+                new ToDoTask
+                {
+                    Id = 2,
+                    UserId = 1,
+                    Name = "Homework" ,
+                    Description = "Finish all university assignments",
+                    TimePublished = new DateTime(),
+                    IsComplite = false
+                },
+                new ToDoTask
+                {
+                    Id = 3,
+                    UserId = 2,
+                    Name = "Clean the room" ,
+                    Description = "Clean floor, table and windows",
+                    TimePublished = new DateTime(),
+                    IsComplite = false
+                }
             };
 
-            return myTasks.AsQueryable<ToDoTask>();
+            return tasks.AsQueryable<ToDoTask>();
         }
     }
 }

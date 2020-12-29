@@ -7,13 +7,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using ToDoList.Helper;
 using ToDoList.Models;
+using ToDoList.Services;
 
 namespace ToDoList
 {
@@ -29,18 +30,22 @@ namespace ToDoList
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<IdentityDbContext>(options =>
+            services.AddSwaggerGen(options =>
             {
-                options.UseSqlServer(Configuration["Data:ToDoListIdentity:ConnectionStrings"]);
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "To-do-list API", Version = "v1" });
             });
 
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+            // configure fake repos DI for application services
+            services.AddTransient<IUserRepository, FakeUserRepository>();
             services.AddTransient<ITaskRepository, FakeTaskRepository>();
+            // configure user service DI for application services
+            services.AddScoped<IUserService, UserService>();
             services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, UserManager<IdentityUser> userManager)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -49,16 +54,26 @@ namespace ToDoList
 
             app.UseHttpsRedirection();
 
+            app.UseSwagger();
+
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "To-do-list API v1");
+            });
+
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseMiddleware<JwtMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGet("/", context =>
+                {
+                    context.Response.Redirect("/swagger/");
+                    return Task.CompletedTask;
+                });
                 endpoints.MapControllers();
             });
-
-            IdentityDataSeeder.EnsureAdminCreated(userManager);
         }
     }
 }
