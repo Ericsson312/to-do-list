@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ToDoList.Helper;
 using ToDoList.Models;
 using ToDoListDTO;
 
@@ -14,7 +14,7 @@ namespace ToDoList.Controllers
     [ApiController]
     public class TasksController : ControllerBase
     {
-        private ITaskRepository _taskRepository;
+        private readonly ITaskRepository _taskRepository;
 
         public TasksController(ITaskRepository taskRepository)
         {
@@ -23,16 +23,26 @@ namespace ToDoList.Controllers
 
         [Authorize]
         [HttpGet]
-        public ActionResult<List<ToDoTask>> GetTasks(int userId)
+        public ActionResult<List<ToDoTask>> GetTasks()
         {
-            return _taskRepository.Tasks().Where(x => x.UserId == userId).ToList();
+            var user = (User)HttpContext.Items["User"];
+
+            return _taskRepository.Tasks().Where(x => x.UserId == user.Id).ToList();
         }
 
         [Authorize]
-        [HttpGet]
-        public ActionResult<ToDoTask> GetTaskById(int userId)
+        [HttpGet("{taskId}")]
+        public ActionResult<ToDoTask> GetTaskById(int taskId)
         {
-            return _taskRepository.Tasks().Where(x => x.UserId == userId).SingleOrDefault();
+            var user = (User)HttpContext.Items["User"];
+            var myTask = _taskRepository.Tasks().Where(x => x.Id == taskId && x.UserId == user.Id).SingleOrDefault();
+
+            if (myTask == null)
+            {
+                return NotFound();
+            }
+
+            return myTask;
         }
     }
 }
